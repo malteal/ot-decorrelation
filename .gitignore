@@ -1,3 +1,36 @@
+eval/*
+logs/*
+data/
+outputs/
+figures/
+models/
+__pycache__
+*.pyc
+*.egg-info
+*.ipynb_checkpoints
+*.h5
+*.tfrecords
+*.csv
+*.pdf
+*.png
+*.svg
+*.log
+*.DS_Store
+doc/*
+.eggs/
+build/*
+dist/*
+plots/*
+env/*
+.vscode/*
+python_install/
+# ignoring preprocessing integration test folders
+jobs/
+
+install_*/
+*_batch/
+*.npz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

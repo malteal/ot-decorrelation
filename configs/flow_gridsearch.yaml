@@ -1,0 +1,33 @@
+# gridsearch settings
+setting:
+  job-name: flow_decorr_gridsearch
+  chdir: /home/users/a/algren/work/ot_decorrelation
+  mem: 24GB
+  # exclude: gpu024
+  time: "12:00:00"
+
+runfile: flow_decorrelation.py
+
+# training settings
+train_config:
+ n_epochs: [300]
+ lr: [0.0001]
+
+# model settings
+model_config: 
+ xz_dim: [1]
+ ctxt_dim: [1]
+ nstacks: [6, 6, 6, 6, 6, 6, 6, 6]
+ base_dist: [normal]
+ param_func: [made] # cplng made
+ device: [cuda]
+ do_lu: [True]
+ rqs_kwargs.num_bins: [12]
+#  rqs_kwargs.tail_bound: [3.5]
+#  rqs_kwargs.tails: [linear]
+
+path:
+  ["/home/users/a/algren/scratch/trained_networks/decorrelation/flow/1d/gridsearch_450_boot"]
+
+logit: [False]
+device: [cuda]

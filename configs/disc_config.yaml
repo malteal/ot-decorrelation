@@ -1,0 +1,33 @@
+# hydra:
+#   run:
+#     dir: /home/users/a/algren/scratch/trained_networks/decorrelation/${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+
+save_path:
+  # /home/users/a/algren/scratch/trained_networks/decorrelation/${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+  /home/users/a/algren/scratch/trained_networks/decorrelation/discriminators/
+
+clf_inputs: /home/users/a/algren/work/ot_decorrelation/data/W_high_level.npz
+
+path_to_clf: /home/users/a/algren/scratch/trained_networks/decorrelation/images/boosted_w/local_vDNN_alpha_0/results_df.h5
+
+multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/qcd_scores.h5
+
+decorrelate_inputs: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/10d/gridsearch/OT_2023_05_17_16_18_42_040304_base_normal_10_1
+# decorrelate_inputs: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/10d/OT_2023_03_30_15_00_52_268900_base_10_1
+
+bootstrap: false
+device: &device cuda
+
+training_args:
+  n_epochs: 100
+  load_best: true
+
+model_args:
+  lr: 1e-3
+  N: 64
+  activation_str: "leaky_relu"
+  n_layers: 4
+  batchnorm: false
+
+
+

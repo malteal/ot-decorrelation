@@ -1,0 +1,22 @@
+# hydra:
+#   run:
+#     dir: /home/users/a/algren/scratch/trained_networks/decorrelation/${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+
+save_path:
+  # /home/users/a/algren/scratch/trained_networks/decorrelation/${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+  /home/users/a/algren/scratch/trained_networks/decorrelation/mass_regression/
+bootstrap: false
+device: &device "cpu"
+
+training_args:
+  n_epochs: 25
+
+model_args:
+  lr: 1e-3
+  N: 128
+  activation_str: "relu"
+  n_layers: 8
+  network_type: regression
+
+
+

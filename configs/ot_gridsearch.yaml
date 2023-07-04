@@ -1,0 +1,42 @@
+# gridsearch settings
+setting:
+  job-name: OT_decorr_gridsearch
+  chdir: /home/users/a/algren/work/ot_decorrelation
+  mem: 24GB
+  time: "12:00:00"
+  exclude: gpu017
+  cpus-per-task: 4
+runfile: ot_decorrelation.py
+
+# training settings
+train_args:
+  loss_wasser_ratio : &loss_wasser_ratio [1]
+  loss_li_ratio : 0
+  lr_f: [0.001]
+  lr_g: [0.001]
+  f_per_g: [4]
+  g_per_f: [10]
+  nepochs: [150]
+  epoch_size: [512]
+  batch_size: [1024]
+  datatype: ["prob"]
+  learning_rate_scheduler: [true]
+
+# model settings
+model_args:
+  n_layers : [4]
+  nonconvex_layersizes : [8]
+  convex_layersizes : [64]
+  nonconvex_activation : ["softplus_zeroed", "elu"]
+  convex_activation : ["softplus_zeroed"]
+  noncvx_norm: ["standard_first"]
+  cvx_norm: ["standard_first", "no"]
+
+target_distribution: ["source", "base_uniform", "base_normal"]
+cvx_dim: [3]
+noncvx_dim: [1]
+
+path:
+  ["/home/users/a/algren/scratch/trained_networks/decorrelation/OT/3d/"]
+
+device: [cuda]

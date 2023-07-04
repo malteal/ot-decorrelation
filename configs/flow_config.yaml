@@ -1,0 +1,45 @@
+hydra:
+  run:
+    dir: ${save_path}
+
+save_path: ${path}/new_below_300_flow_${now:%Y_%m_%d}_${now:%H_%M_%S_%f}_${model_config.base_dist}_${model_config.xz_dim}_${model_config.ctxt_dim}
+
+path:
+  /home/users/a/algren/scratch/trained_networks/decorrelation/flow/${model_config.xz_dim}d/
+
+
+path_to_clf: /home/users/a/algren/scratch/trained_networks/decorrelation/discriminators/dense_04_02_2023_16_49_19_533453/results_df.h5
+
+# path_to_clf: /home/users/a/algren/scratch/trained_networks/decorrelation/images/boosted_w/local_vDNN_alpha_0/results_df.h5
+
+multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
+
+
+device: &device "cuda"
+multi_cls: ${great:${model_config.xz_dim},1}
+
+conds_trans: log
+maxevents: null
+valid_size: train_test
+logit: true
+
+model_config:
+ xz_dim: 3
+ ctxt_dim: 1
+ nstacks: 5
+ base_dist: normal
+ param_func: made # cplng made
+ logit: ${logit}
+ device: *device
+ do_lu: ${logit} # ${great:${model_config.xz_dim},1}
+ drop_dim: 0
+ rqs_kwargs: 
+  tails: linear
+  num_bins: 12
+  tail_bound: 3.5 
+
+train_config:
+ n_epochs: 300
+ lr: 0.0005
+
+

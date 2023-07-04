@@ -1,0 +1,58 @@
+hydra:
+  run:
+    dir: ${save_path}
+
+
+save_path: ${path}/OT_${now:%Y_%m_%d}_${now:%H_%M_%S_%f}_${target_distribution}_${cvx_dim}_${noncvx_dim}
+
+# path: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/${cvx_dim}d/
+path: /home/users/a/algren/work/my_projects/ot-decorrelation/outputs/OT/${cvx_dim}d/
+
+device: "cuda"
+
+clf_inputs: /home/users/a/algren/work/ot_decorrelation/data/W_high_level.npz
+path_to_clf: /home/users/a/algren/scratch/trained_networks/decorrelation/discriminators/dense_04_02_2023_16_49_19_533453/results_df.h5
+multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
+
+conds_trans: log
+bootstrap: false
+
+cvx_dim: 3
+noncvx_dim: 1
+
+target_distribution: base_uniform # base or source have to add uniform/normal/dirichlet/base_normal
+train_args:
+  nepochs: 100
+  lr_f: 0.001
+  lr_g: 0.001
+  epoch_size: 512
+  datatype: "" # prob
+  f_per_g: 4
+  g_per_f: 10
+  burn_in: 50
+  batch_size: 1024
+  loss_li_ratio: 0.0
+  loss_wasser_ratio: 1.0
+  grad_norm:
+    f: 0
+    g: 0
+  learning_rate_scheduler: true
+
+
+model_args:
+    cvx_dim: ${cvx_dim}
+    noncvx_dim: ${noncvx_dim}
+    nonconvex_activation: "softplus_zeroed" # quadlrelu
+    convex_activation: "softplus_zeroed" #quadlrelu
+    correction_trainable: true
+    first_act_sym: "no" #"symsoftplus"
+    logit: ${less:${cvx_dim},4} # true
+    nonconvex_layersizes: 8
+    convex_layersizes: 64
+    n_layers: 4
+    device: ${device}
+    verbose: true
+    noncvx_norm: standard_first
+    cvx_norm: ""
+
+
