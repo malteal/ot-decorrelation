@@ -303,12 +303,6 @@ class PICNN(
         if sig_mask is None:
             sig_mask = torch.ones_like(totransport[:,0])==1
 
-        if scaler is not None:
-            distribution = torch.tensor(scaler.transform(
-                torch.concat([conditionals, totransport],1).cpu().detach().numpy()),
-                                       requires_grad=True, device=totransport.device)
-            conditionals = distribution[:,:conditionals.shape[1]]
-            totransport = distribution[:,conditionals.shape[1]:]
         transport = []
         for i,j,mask in zip(
                         conditionals.chunk(n_chunks),
@@ -321,10 +315,6 @@ class PICNN(
                                         create_graph=False
                                         )[0].cpu().detach())
         transport = torch.concat(transport,0)
-        if scaler is not None:
-            transport = torch.tensor(scaler.inverse_transform(
-                torch.concat([conditionals.cpu(), transport],1).cpu().detach().numpy())
-                                       )[:, conditionals.shape[1]:]
         return transport
 
     def set_standard_parameters(self, transport_data=None, conds_data=None,

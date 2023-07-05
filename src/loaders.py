@@ -167,6 +167,7 @@ def get_base_distribution(cvx_dim:int, distribution_name, logit:bool=True, devic
             T.tensor([0.0]*cvx_dim, device = device),
             T.tensor([1.0]*cvx_dim, device = device),
             )
+    return base_distribution
         
 
 class Dirichlet(Distribution):

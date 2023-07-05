@@ -6,13 +6,12 @@ hydra:
 save_path: ${path}/OT_${now:%Y_%m_%d}_${now:%H_%M_%S_%f}_${target_distribution}_${cvx_dim}_${noncvx_dim}
 
 # path: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/${cvx_dim}d/
-path: /home/users/a/algren/work/my_projects/ot-decorrelation/outputs/OT/${cvx_dim}d/
+path: /home/malteal/local_work/ot-decorrelation/outputs/OT/${cvx_dim}d/
 
-device: "cuda"
+device: "cpu"
 
-clf_inputs: /home/users/a/algren/work/ot_decorrelation/data/W_high_level.npz
-path_to_clf: /home/users/a/algren/scratch/trained_networks/decorrelation/discriminators/dense_04_02_2023_16_49_19_533453/results_df.h5
-multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
+# multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
+multi_clf: /home/malteal/unige/qcd_scores.h5
 
 conds_trans: log
 bootstrap: false
@@ -25,7 +24,7 @@ train_args:
   nepochs: 100
   lr_f: 0.001
   lr_g: 0.001
-  epoch_size: 512
+  epoch_size: 8 # number of iteration per epoch
   datatype: "" # prob
   f_per_g: 4
   g_per_f: 10
@@ -40,19 +39,19 @@ train_args:
 
 
 model_args:
-    cvx_dim: ${cvx_dim}
-    noncvx_dim: ${noncvx_dim}
-    nonconvex_activation: "softplus_zeroed" # quadlrelu
-    convex_activation: "softplus_zeroed" #quadlrelu
-    correction_trainable: true
-    first_act_sym: "no" #"symsoftplus"
-    logit: ${less:${cvx_dim},4} # true
-    nonconvex_layersizes: 8
-    convex_layersizes: 64
-    n_layers: 4
-    device: ${device}
-    verbose: true
-    noncvx_norm: standard_first
-    cvx_norm: ""
+  cvx_dim: ${cvx_dim}
+  noncvx_dim: ${noncvx_dim}
+  nonconvex_activation: "softplus_zeroed" # quadlrelu
+  convex_activation: "softplus_zeroed" #quadlrelu
+  correction_trainable: true
+  first_act_sym: "no" #"symsoftplus"
+  logit: true
+  nonconvex_layersizes: 8
+  convex_layersizes: 64
+  n_layers: 4
+  device: ${device}
+  verbose: true
+  noncvx_norm: standard_first
+  cvx_norm: ""
 
 

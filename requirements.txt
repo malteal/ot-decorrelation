@@ -1,0 +1,35 @@
+# deep learning
+torch
+nflows
+
+# data science / plotting
+numpy
+matplotlib
+scipy
+seaborn
+scikit-learn
+pandas
+numba
+
+# wandb/hydra
+omegaconf
+hydra-core
+wandb
+
+# tests
+black
+coverage
+darglint
+flake8
+isort
+pylint
+pytest-cov
+pytest
+
+# misc
+h5py
+jupyter
+tqdm
+jupyterlab
+python-gitlab
+

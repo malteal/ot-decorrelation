@@ -14,9 +14,9 @@ def load_data(cvx_dim, multi_clf="/srv/beegfs/scratch/groups/rodem/anomalous_jet
             output["encodings"] = np.reshape(2*(1/(1+np.exp(-utils.get_disc_func(2)(output["encodings"]))))-1, (-1,1))
 
             output = {key: item for key, item in output.items()}
-    
-    bkg_mask = output["labels"]==0
-    output = {i: output[i][np.ravel(bkg_mask)] for i in output}
+    if training:
+        bkg_mask = output["labels"]==0
+        output = {i: output[i][np.ravel(bkg_mask)] for i in output}
 
     # preprocess
     output["mass"] = np.log(output["mass"])

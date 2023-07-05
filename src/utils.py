@@ -8,11 +8,13 @@ import numpy as np
 import torch as T
 import pandas as pd
 import h5py
+import json
+from omegaconf import OmegaConf
+
 
 #internal
-from tools import misc
 from src.PICNN.PICNN import PICNN
-from tools.flows import Flow
+# from tools.flows import Flow
 
 STYLE_TARGET = {"marker":"o", "color":"black", "label":"Base",
                 "linewidth":0, "markersize":4}
@@ -23,22 +25,85 @@ STYLE_TRANS = {"linestyle": "dashed", "color":"red", "label":"Transport",
 
 replace_symbols = {":": "", " ": "", "$": "", "-":"_", ",":"_", "\\": ""}
 
+def load_yaml(path, hydra_bool:bool=True):
+    if hydra_bool:
+        data = OmegaConf.load(path)
+        OmegaConf.set_struct(data, False)
+    else:
+        with open(path, 'r') as stream:
+            data = yaml.safe_load(stream)
+    return data
 
 def load_hdf(filename):
     return h5py.File(filename,'r')
 
+def load_json(name):
+    with open(name, "r") as fp:
+        data = json.load(fp)
+    return data
+
+def save_yaml(dict, name, hydra=True):
+    """save data as yaml    
+
+    Parameters
+    ----------
+    dict : data
+        data that should be saved
+    name : str
+        path.yml where it should be saved
+    """
+    if hydra:
+        # dumps to file:
+        with open(name, "w") as f:
+            OmegaConf.save(dict, f)
+    else:
+        with open(name, 'w') as outfile:
+            yaml.dump(dict, outfile, default_flow_style=False)
+
+
 def logit(prob):
-    return np.log(prob/(1-prob+10e-10))
+    if isinstance(prob, T.Tensor):
+        return T.log(prob/(1-prob+10e-10))
+    else:
+        return np.log(prob/(1-prob+10e-10))
+
+def probsfromlogits(logitps: np.ndarray) -> np.ndarray:
+    """reverse transformation from logits to probs
+
+    Parameters
+    ----------
+    logitps : np.ndarray
+        arrray of logit
+
+    Returns
+    -------
+    np.ndarray
+        probabilities from logit
+    """
+    norm=1
+    if isinstance(logitps, T.Tensor):
+        ps_value = 1.0 / (1.0 + T.exp(-logitps))
+        if (ps_value.shape[-1]>1) and (len(ps_value.shape)>1):
+            norm = T.sum(ps_value, axis=1)
+            norm = T.stack([norm] * logitps.shape[1]).T
+    else:
+        ps_value = 1.0 / (1.0 + np.exp(-logitps))
+        if (ps_value.shape[-1]>1) and (len(ps_value.shape)>1):
+            norm = np.sum(ps_value, axis=1)
+            norm = np.stack([norm] * logitps.shape[1]).T
+    return ps_value / norm
+
+
 
 def load_flow_model(path:str, device= "cpu"):
     if len(glob(f"{path}/*"))==0:
         raise ValueError(f"{path} is empty")
     try:
-        model_args = misc.load_yaml(glob(f"{path}/flow*.yaml")[0])
+        model_args = load_yaml(glob(f"{path}/flow*.yaml")[0])
     except:
-        model_args = misc.load_yaml(glob(f"{path}/model*.yaml")[0])
-    train_args = misc.load_yaml(f"{path}/train_config.yaml")
-    # model_args = misc.load_yaml(f"{path}/flow_config.yaml")
+        model_args = load_yaml(glob(f"{path}/model*.yaml")[0])
+    train_args = load_yaml(f"{path}/train_config.yaml")
+    # model_args = load_yaml(f"{path}/flow_config.yaml")
     model_args.do_lu =model_args.xz_dim>2
     model_args.logit =model_args.xz_dim>2
     try:
@@ -58,9 +123,9 @@ def load_flow_model(path:str, device= "cpu"):
 
 def load_ot_model(path:str, verbose=True, device= "cpu"):
     "load ot model given a path to model"
-    model_args = misc.load_yaml(f"{path}/model_config.yml")
-    train_args = misc.load_yaml(f"{path}/train_config.yml")
-    log = misc.load_json(glob(f"{path}/log.*")[-1])
+    model_args = load_yaml(f"{path}/model_config.yml")
+    train_args = load_yaml(f"{path}/train_config.yml")
+    log = load_json(glob(f"{path}/log.*")[-1])
     eval_col =  None #"AUC" if "source" in path else "log_likelihood_eval"#"source_average_wasserstein"#
     if (eval_col is not None) & (eval_col in log):
         performance_metric = log[eval_col]
@@ -72,7 +137,6 @@ def load_ot_model(path:str, verbose=True, device= "cpu"):
     model_args["cvx_dim"]=train_args["cvx_dim"]
     model_args["noncvx_dim"]=train_args["noncvx_dim"]
     model_args["verbose"] = verbose
-    model_args["PICNN_incorrect_btilde_"] = True
     w_disc = PICNN(**model_args)
     generator = PICNN(**model_args)
     path_to_best_model = sorted(glob(f"{path}/training_setup/*"),
@@ -176,3 +240,25 @@ def save_fig(fig, save_path, title:str=None, close_fig=True,
     plt.savefig(save_path, dpi=500, facecolor='white', transparent=False, **save_args)
     if close_fig:
         plt.close(fig)
+
+def save_config(outdir: str, values: dict, drop_keys: list, file_name: str):
+    """save the model and training config files and helps with creating folders
+
+    Parameters
+    ----------
+    outdir : str
+        path to the output folder
+    values : dict
+        config values in dict form - also the function will remove all drop_keys
+    drop_keys : list
+        drop_keys should all non-saveable parameters in values
+    file_name : str
+        Name of the new saved file
+    """
+    for folder in ["", "models", "plots"]:
+        if not os.path.exists(outdir + "/" + folder):
+            os.mkdir(outdir + "/" + folder)
+    for drop in drop_keys:
+        values.pop(drop, None)
+
+    save_yaml(values, f"{outdir}/{file_name}.yml", hydra=True)

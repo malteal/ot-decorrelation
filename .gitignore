@@ -1,9 +1,10 @@
-eval/*
-logs/*
-data/
-outputs/
-figures/
-models/
+# mine
+logs
+outputs
+figures
+models
+
+#defaults
 __pycache__
 *.pyc
 *.egg-info
