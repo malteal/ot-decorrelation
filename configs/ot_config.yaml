@@ -6,12 +6,12 @@ hydra:
 save_path: ${path}/OT_${now:%Y_%m_%d}_${now:%H_%M_%S_%f}_${target_distribution}_${cvx_dim}_${noncvx_dim}
 
 # path: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/${cvx_dim}d/
-path: /home/malteal/local_work/ot-decorrelation/outputs/OT/${cvx_dim}d/
+path: outputs/OT/${cvx_dim}d/
 
 device: "cpu"
 
 # multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
-multi_clf: /home/malteal/unige/qcd_scores.h5
+multi_clf: data/qcd_scores.h5
 
 conds_trans: log
 bootstrap: false

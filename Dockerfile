@@ -15,6 +15,7 @@ RUN apt-get -y update && \
         sudo
 
 COPY requirements.txt .
+COPY . .
 
 RUN conda update conda
 RUN conda update conda-build

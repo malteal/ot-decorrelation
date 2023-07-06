@@ -150,7 +150,7 @@ def load_ot_model(path:str, verbose=True, device= "cpu"):
 
 def softmax(x):
     exp = np.clip(np.exp(x), -20, 20)
-    return exp/np.sum(exp,1).reshape(-1,1).astype(np.float)
+    return exp/np.sum(exp,1).reshape(-1,1).astype(float)
 
 def JSD(hist1, hist2):
     return 0.5 * (entropy(hist1, 0.5 * (hist1 + hist2)) + entropy(hist2, 0.5 * (hist1 + hist2)))

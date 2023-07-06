@@ -61,17 +61,16 @@ class Metrics(eval_utils.EvalauteFramework):
 
 
 if __name__ =="__main__":
-    save_fig_path = "figures/3d/"
     FIG_TYPE = ".pdf"
     style_bkg_rej = {"ls":"dashed", "lw": 2}
     
     save_fig_path = "figures/3d/"
     plot_bool=True
     device="cpu"
-    MULTI_CLF = "/home/malteal/unige/combined_scores.h5"
+    MULTI_CLF = "data/combined_scores.h5"
     
     OT_PATH = [
-        "/home/malteal/local_work/ot-decorrelation/outputs/OT/3d/OT_2023_07_05_15_39_07_997447_base_uniform_3_1",
+        "outputs/OT/3d/OT_2023_07_05_15_39_07_997447_base_uniform_3_1",
         ]
 
     FLOW_PATH = [

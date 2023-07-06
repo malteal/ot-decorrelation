@@ -31,7 +31,7 @@ if __name__ == "__main__":
     FLOW_PATHS=[]
 
     OT_PATHS = [
-        "/home/malteal/local_work/ot-decorrelation/outputs/OT/1d/OT_2023_07_05_14_42_07_841701_base_uniform_1_1/"
+        "outputs/OT/1d/OT_2023_07_05_14_42_07_841701_base_uniform_1_1/"
         ]
     eval_data_path = "/home/malteal/unige/combined_scores.h5"
 

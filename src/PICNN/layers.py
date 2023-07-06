@@ -69,7 +69,7 @@ def activation_functions(activation_str: str, params: dict={}, device="cuda") ->
     elif activation_str == "elu":
         # act_func = torch.nn.ELU()  # pylint: disable=E1101
         act_func = Elu()  # pylint: disable=E1101
-    elif activation_str is "":
+    elif activation_str == "":
         act_func = lambda x: x # dummy functions
     else:
         raise ValueError(f"Did not recognize the activation_str: {activation_str}")

@@ -60,7 +60,7 @@ class EvalauteFramework:
         self.conds = conds
         self.save_path = kwargs.get("save_path", None)
         if self.save_path is not None:
-            os.makedirs(self.save_path)
+            os.makedirs(self.save_path, exist_ok=True)
         self.verbose = kwargs.get("verbose", True)
         self.fig_type = kwargs.get("fig_type", ".pdf")
         self.generator=None
