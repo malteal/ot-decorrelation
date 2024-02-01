@@ -19,9 +19,6 @@ and install the requirements
 ```bash
 # Install requirements
 pip install -r requirements.txt
-
-# -- user install for user if you are in a docker env and -e make it editable
-pip install . -e --user
 ```
 
 ## Usage
@@ -65,7 +62,7 @@ The function you make to load your data can be added to `ot_decorrelation.py` in
 When the config has been set, it's time to run the model:
 
 ```bash
-python run/run_decorrelation.py
+python run/ot_decorrelation.py
 ```
 This decorrelation method is able to decorrelate a continuous feature space against protected attributes with optimal transport. It performs well in the context of jet classification in high energy physics, where classifier scores are desired to be decorrelated from the mass of a jet.
 
