@@ -115,8 +115,6 @@ class PICNN(
         self.weight_uutilde = torch.nn.ParameterList()
         self.bias_tilde = torch.nn.ParameterList()
 
-        self.zbns = torch.nn.ModuleList()
-        self.ubns = torch.nn.ModuleList()
         self.initialize_parameters()
         self.to(self.device)
 
@@ -127,20 +125,6 @@ class PICNN(
     def count_trainable_parameters(self):
         sum_trainable = np.sum([i.numel() for i in self.parameters() if i.requires_grad])
         return sum_trainable
-            
-    def layer_norms(self, size, norm_type):
-        # normalization layers
-        norms=torch.nn.ModuleList()
-        for lay in range(len(size)):
-            if ((norm_type == "batch") or
-                (("batch" in norm_type) & ("first" in norm_type) & (lay==0))): # batch normalization
-                norms.append(torch.nn.BatchNorm1d(size[lay], device = self.device))
-            elif ((norm_type == "standard") or
-                (("standard" in norm_type) & ("first" in norm_type) & (lay==0))): # batch normalization
-                norms.append(NormLayer(size[lay], device = self.device))
-            else: 
-                norms.append(identity_layer((size[lay],size[lay]), device = self.device))
-        return norms
 
     def initialize_parameters(self):
         """initialize all parameters"""
@@ -178,10 +162,6 @@ class PICNN(
             self.bias_z.append(bias(zsize[lay],
                                     device = self.device,
                                     requires_grad=usize[lay]!=0))
-        # normalisation
-        self.zbns = self.layer_norms(zsize, self.cvx_norm)
-        self.ubns = self.layer_norms(usize, self.noncvx_norm)
-        self.ubns.append(identity_layer((2,2), device = self.device))
 
         # conditional network PICNN
         for lay in range(self.nhidden-1):
@@ -231,10 +211,9 @@ class PICNN(
         torch.Tensor
             return the output of the network h(theta,x)
         """
-        xs_input = self.ubns[0](xs_input)
         ui_value = xs_input
 
-        ys_input = self.zbns[0](ys_input_or)
+        ys_input = ys_input_or.clone()
         zi_value = torch.zeros((len(xs_input),1), device=self.device)
 
         for i in range(self.nhidden):
@@ -250,22 +229,20 @@ class PICNN(
                 +self.bias_z[i])
                     ) 
 
-            zi_value = self.zbns[i+1](self.g_act[i](
+            zi_value = self.g_act[i](
                     apply_linear_layer(zterm, self.weight_zz[i],
                                     act_weight_zz = self.act_weight_zz)
                     + yterm
                     + apply_linear_layer(ui_value, self.weight_u[i])
                     + self.bias[i]
-            ))
+            )
             # last iteration will be for correction to output
 
-            ui_value = self.ubns[i+1](
-                self.gtilde_act[i](
+            ui_value = self.gtilde_act[i](
                     apply_linear_layer(
                         ui_value, self.weight_uutilde[i]
                     )+self.bias_tilde[i]
                 )
-            )
 
         if self.correction_trainable:
             zi_value = (ui_value[:,:1]/2 * torch.sum(ys_input_or * ys_input_or, axis=1, keepdim=True)+ ui_value[:,1:] * zi_value)
@@ -316,35 +293,3 @@ class PICNN(
                                         )[0].cpu().detach())
         transport = torch.concat(transport,0)
         return transport
-
-    def set_standard_parameters(self, transport_data=None, conds_data=None,
-                                standard_nr=0) -> None:
-        if "standard" in self.cvx_norm: # constant norm layers
-            self.zbns[standard_nr].set_parameters(transport_data.shape[1],
-                                                transport_data.mean(0).to(self.device),
-                                                transport_data.std(0).to(self.device))
-        if "standard" in self.noncvx_norm: # constant norm layers
-            self.ubns[standard_nr].set_parameters(conds_data.shape[1],
-                                                conds_data.mean(0).to(self.device),
-                                                conds_data.std(0).to(self.device))
-
-class NormLayer(torch.nn.Module):
-
-    def __init__(self, size, mu=0.0, sigma=1.0, device="cuda"):
-        super().__init__()
-        self.device=device
-        self.set_parameters(size, mu, sigma)
-        
-    def ones(self, size):
-        iden = torch.ones((1,size)).to(self.device)  # pylint: disable=E1101
-        # iden.data.copy_(torch.diag(torch.ones((size,))))  # pylint: disable=E1101
-        iden.requires_grad = False
-        return iden
-
-    def set_parameters(self, size, mu, sigma):
-        self.mu = torch.nn.Parameter(self.ones(size)*mu, requires_grad=False)
-        self.sigma = torch.nn.Parameter(self.ones(size)*sigma, requires_grad=False)
-
-    def forward(self, input):
-        return (input - self.mu)/self.sigma
-
