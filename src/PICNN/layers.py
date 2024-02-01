@@ -26,14 +26,8 @@ def Softplus(threshold=20, zeroed=False, symmetric=False, device="cuda"):
 
     else:
         return softplus
-    
-def Elu(alpha=1):
-    # can be exported by onnx_gradient
-    def elu(x):
-        return torch.where(x<0, alpha*(torch.exp(x)-1), x)
-    return elu
 
-def activation_functions(activation_str: str, params: dict={}, device="cuda") -> callable:
+def get_act_func(activation_str: str, device="cuda") -> callable:
     """output different activation function
 
     Parameters
@@ -57,18 +51,17 @@ def activation_functions(activation_str: str, params: dict={}, device="cuda") ->
     elif activation_str == "softpluszeroed":
         act_func = Softplus(zeroed=True, device=device)
     elif activation_str == "relu":
-        act_func = torch.nn.ReLU()  # pylint: disable=E1101
+        act_func = torch.nn.ReLU() 
     elif activation_str == "celu":
-        act_func =  torch.nn.CELU()  # pylint: disable=E1101
+        act_func =  torch.nn.CELU() 
     elif activation_str == "tanh":
-        act_func =  torch.nn.Tanh()  # pylint: disable=E1101
+        act_func =  torch.nn.Tanh() 
     elif activation_str == "leakyrelu":
-        act_func = torch.nn.LeakyReLU(0.2)  # pylint: disable=E1101
+        act_func = torch.nn.LeakyReLU(0.2) 
     elif activation_str == "symsoftplus":
         act_func = Softplus(symmetric=True)
     elif activation_str == "elu":
-        # act_func = torch.nn.ELU()  # pylint: disable=E1101
-        act_func = Elu()  # pylint: disable=E1101
+        act_func = torch.nn.ELU() 
     elif activation_str == "":
         act_func = lambda x: x # dummy functions
     else:
@@ -103,8 +96,7 @@ def apply_linear_layer(
         return input_value.matmul(weights.t())
 
 
-def weight(x_value: int, y_value: int, device: str = "cpu",
-           requires_grad=True) -> torch.Tensor:
+def weight(x_value: int, y_value: int, device: str = "cpu") -> torch.Tensor:
     """Initialize the weight parameter of neurons randomly
 
     Parameters
@@ -121,12 +113,12 @@ def weight(x_value: int, y_value: int, device: str = "cpu",
     torch.Tensor
         output a random weight tensor with size y times x_value.
     """
-    weights = torch.empty((y_value, x_value))  # pylint: disable=E1101
+    weights = torch.empty((y_value, x_value)) 
     if x_value > 0 and y_value > 0:
         torch.nn.init.kaiming_normal_(weights)
-    # if "softplus" in act_func:
+
     weights = weights/weights.size(1) # divide with input size
-    parameters = torch.nn.parameter.Parameter(weights.to(device) # pylint: disable=E1101
+    parameters = torch.nn.parameter.Parameter(weights.to(device)
     )
     return parameters
 
@@ -146,60 +138,14 @@ def bias(x_value: int, device: str = "cpu", requires_grad=True) -> torch.Tensor:
     torch.Tensor
         Output the bias vector
     """
-    bias = torch.zeros(x_value) # pylint: disable=E1101
+    bias = torch.zeros(x_value)
 
     if (x_value > 0) & requires_grad:
         torch.nn.init.uniform_(
             bias, -np.sqrt(1.0 / x_value), np.sqrt(1.0 / x_value)
         )
-    # if "softplus" in act_func:
-    #     bias = bias/bias.size(0) # divide with input size
+
     parameters = torch.nn.parameter.Parameter(
-        bias.to(device), requires_grad=requires_grad  # pylint: disable=E1101
+        bias.to(device), requires_grad=requires_grad 
     )
     return parameters
-
-
-def identity(size: int, device: str = "cpu") -> torch.Tensor:
-    """Generate a identity matrix
-
-    Parameters
-    ----------
-    size : int
-        Size of the identity matrix
-    device : str, optional
-        Which device to init, by default "cpu"
-
-    Returns
-    -------
-    torch.Tensor
-        output identity of siez n
-    """
-    parameters = torch.empty((size, size)).to(device)  # pylint: disable=E1101
-    parameters.data.copy_(torch.diag(torch.ones((size,))))  # pylint: disable=E1101
-    return parameters
-
-
-def identity_layer(size: int, trainable=False, device: str = "cpu") -> torch.Tensor:
-    """create identity layer
-
-    Parameters
-    ----------
-    size : int
-        Size of the matrix
-    device : str, optional
-        which device to init on, by default "cpu"
-
-    Returns
-    -------
-    torch.Tensor
-        output identity layer
-    """
-    if trainable:
-        layer = torch.nn.Linear(size, size, bias=False)
-        layer.weight.data = identity(size)
-        layer.weight.data.requires_grad = False
-    else:
-        layer = torch.nn.Identity(size) #identity(size)
-    return layer.to(device)
-

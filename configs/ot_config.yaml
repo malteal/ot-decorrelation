@@ -5,12 +5,10 @@ hydra:
 
 save_path: ${path}/OT_${now:%Y_%m_%d}_${now:%H_%M_%S_%f}_${target_distribution}_${cvx_dim}_${noncvx_dim}
 
-# path: /home/users/a/algren/scratch/trained_networks/decorrelation/OT/${cvx_dim}d/
 path: outputs/OT/${cvx_dim}d/
 
-device: "cpu"
+device: cuda
 
-# multi_clf: /srv/beegfs/scratch/groups/rodem/anomalous_jets/taggers/supervised/transformer_multiclass/outputs/qcd_scores.h5
 multi_clf: data/qcd_scores.h5
 
 conds_trans: log
@@ -19,7 +17,7 @@ bootstrap: false
 cvx_dim: 3
 noncvx_dim: 1
 
-target_distribution: base_uniform # base or source have to add uniform/normal/dirichlet/base_normal
+target_distribution: source # base or source have to add uniform/normal/dirichlet/base_normal
 train_args:
   nepochs: 100
   lr_f: 0.001

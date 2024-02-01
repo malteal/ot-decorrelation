@@ -7,9 +7,8 @@ import torch
 from src.PICNN.layers import (
     weight,
     bias,
-    identity_layer,
     apply_linear_layer,
-    activation_functions,
+    get_act_func,
 )
 
 
@@ -77,21 +76,21 @@ class PICNN(
         self.scaler = kwargs.get("scaler", None)
         self.logit=logit
         #activation function force convexity on the linear transformations
-        self.act_enforce_cvx = activation_functions(act_enforce_cvx, activation_params, device=self.device)
-        self.act_weight_zz = activation_functions(act_weight_zz, activation_params, device=self.device)
+        self.act_enforce_cvx = get_act_func(act_enforce_cvx, activation_params, device=self.device)
+        self.act_weight_zz = get_act_func(act_weight_zz, activation_params, device=self.device)
 
         # activation functions in layers
-        nonconvex_activation_func = activation_functions(nonconvex_activation,
+        nonconvex_activation_func = get_act_func(nonconvex_activation,
                                                             activation_params, device=self.device)
         self.gtilde_act = [nonconvex_activation_func for _ in range(self.nhidden-1)]
-        self.gtilde_act.append(activation_functions("softplus", {}, device=self.device))
+        self.gtilde_act.append(get_act_func("softplus", {}, device=self.device))
         # init activation function
-        convex_activation_func = activation_functions(convex_activation, activation_params, device=self.device)
+        convex_activation_func = get_act_func(convex_activation, activation_params, device=self.device)
 
         self.g_act = [convex_activation_func for _ in range(self.nhidden)]
 
         if isinstance(first_act_sym, str) & (first_act_sym != "no"):
-            self.g_act[0] = activation_functions(first_act_sym, device=self.device)
+            self.g_act[0] = get_act_func(first_act_sym, device=self.device)
             self.first_act_sym=True
         else:
             self.first_act_sym=False

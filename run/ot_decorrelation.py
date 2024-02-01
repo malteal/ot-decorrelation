@@ -19,7 +19,6 @@ import src.pipeline as pl
 import src.loaders as loaders
 from src.PICNN.PICNN import PICNN
 import src.utils as utils 
-import src.eval_utils as eval_utils  
 from src.trainer import Training
 
 
@@ -33,7 +32,7 @@ def main(config: DictConfig):
 
     log.info(f"Saving at {config.save_path}")
 
-    if config.model_args.logit:
+    if config.model_args.logit: # if your data is in probability space
         log.info("Transform to logit space")
         output["encodings"] = utils.logit(output["encodings"])
         output["encodings"] = np.clip(output["encodings"], -15, 15)
@@ -77,22 +76,9 @@ def main(config: DictConfig):
     else:
         raise ValueError("Unknown distribution")
 
-    # define networks
+    # define PICNN networks
     w_disc = PICNN(**config.model_args)
     generator = PICNN(**config.model_args)
-    w_disc.set_standard_parameters(target_loader.data[:,config.noncvx_dim:],
-                                   target_loader.data[:,:config.noncvx_dim])
-    generator.set_standard_parameters(train[:,config.noncvx_dim:],
-                                   train[:,:config.noncvx_dim])
-
-    # schedulers
-    if config.train_args.learning_rate_scheduler:
-        config.train_args["sch_args_f"] =  {
-            "T_max": config.train_args.nepochs*config.train_args["epoch_size"],
-            "eta_min": 5e-5}
-        config.train_args["sch_args_g"] =  {
-            "T_max": config.train_args.nepochs*config.train_args["epoch_size"],
-            "eta_min": 5e-5}
 
     # train setup
     ot_training = Training(f_func=w_disc,g_func=generator,
